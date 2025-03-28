@@ -1,0 +1,239 @@
+.form-container {
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* Lien de retour */
+.back-link-container {
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  color: #4b5563;
+  text-decoration: none;
+}
+
+.back-arrow {
+  margin-right: 0.5rem;
+}
+
+/* Message de succès */
+.success-message {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #d1fae5;
+  color: #047857;
+  border-radius: 0.25rem;
+}
+
+/* Groupes de formulaires */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-row-textarea {
+  align-items: flex-start;
+}
+
+/* Libellés de formulaire */
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+/* Conteneurs d'entrées */
+.input-container {
+  width: 100%;
+  display: flex;
+}
+
+.input-wrapper {
+  flex: 1;
+}
+
+/* Champs de formulaire */
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.form-textarea {
+  resize: vertical;
+}
+
+.input-focused {
+  border-color: #6366f1;
+}
+
+.input-error {
+  border-color: red;
+}
+
+/* Texte d'aide et messages d'erreur */
+.input-help {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.error-message {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: red;
+}
+
+/* Boutons d'action */
+.action-buttons {
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.5rem;
+}
+
+.action-button {
+  padding: 0.125rem;
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin-right: 0.5rem;
+}
+
+.action-button:last-child {
+  margin-right: 0;
+}
+
+/* Pour les éléments requis */
+.required {
+  color: red;
+}
+
+/* Boutons du bas de formulaire */
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.button-primary {
+  background-color: #6366f1;
+  color: white;
+}
+
+.button-secondary {
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.message-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 50%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.message-container {
+  background-color: #fff;
+  padding: 20px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+  font-weight: 500;
+  color: #4caf50;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Styles pour les icônes "dessinées" */
+/* Styles pour les icônes "dessinées" */
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.action-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.action-button svg {
+  width: 16px; /* Réduire la taille des icônes */
+  height: 16px; /* Réduire la taille des icônes */
+  transition: all 0.2s ease;
+  filter: blur(1px); /* Ajouter un effet de flou */
+}
+
+.action-button:hover svg {
+  transform: scale(1.1);
+  filter: blur(0.5px); /* Réduire le flou au survol */
+}
+
+/* Style pour les messages d'erreur */
+.error-message {
+  color: #f44336;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
