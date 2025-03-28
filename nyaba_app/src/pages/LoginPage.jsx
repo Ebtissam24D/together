@@ -10,26 +10,50 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const apiUrl =import.meta.env.VITE_API_BACKEND_URL; 
-  const handleSubmit =async (e) => {
+  const apiUrl = import.meta.env.VITE_API_BACKEND_URL;
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
 
-    // Simulation d'une vérification d'authentification
-  const response = await axios.post(`${apiUrl}/login`, {
-      user_name,
-      password,
-    });
-    if (response.data) {
-      // Authentification réussie, rediriger vers la page de recherche
-      navigate("/Dashboard");
-    } else {
-      // Authentification échouée, afficher un message d'erreur
-      setErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
+    try {
+        const response = await axios.post(
+            `${apiUrl}/login`, 
+            { user_name, password }, 
+            { withCredentials: true } // Important: This allows cookies (session) to be sent and received
+        );
+
+        console.log(response.data);
+
+        if (response.data && response.data.message === "Login successful") {
+            // Fetch session data to confirm user login
+            const sessionResponse = await axios.get(`${apiUrl}/session`, { withCredentials: true });
+
+            if (sessionResponse.data && sessionResponse.data.user) {
+                const user = sessionResponse.data.user;
+
+                // Redirect based on user role
+                if (user.privilege === "admin") {
+                    navigate("/manage_users");
+                } else {
+                    navigate("/Dashboard");
+                }
+            }
+        } else {
+            setErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+
+        if (error.response) {
+            setErrorMessage("Identifiants incorrects ou compte inexistant.");
+        } else {
+            setErrorMessage("Problème de connexion. Vérifiez votre réseau.");
+        }
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
-  }
+};
 
   return (
     <>
@@ -51,7 +75,6 @@ const LoginPage = () => {
                 Nom d'utilisateur
               </label>
               <input
-                
                 type="text"
                 required
                 value={user_name}
@@ -77,8 +100,6 @@ const LoginPage = () => {
               />
             </div>
 
-
-
             <button
               type="submit"
               disabled={isLoading}
@@ -86,8 +107,6 @@ const LoginPage = () => {
               {isLoading ? "Connexion en cours..." : "Se connecter"}
             </button>
           </form>
-              
-
         </div>
       </div>
     </>

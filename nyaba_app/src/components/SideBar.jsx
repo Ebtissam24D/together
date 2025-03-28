@@ -1,10 +1,26 @@
+import axios from "axios";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const SideBar = () => {
   const [activeView, setActiveView] = useState("dashboard");
+  const navigate = useNavigate();
   const handleNavClick = (view) => {
     setActiveView(view);
+  };
+  const apiUrl = import.meta.env.VITE_API_BACKEND_URL;
+  const handleLogout = async () => {
+    try {
+      // Sending POST request to logout
+      const response = await axios.post(`${apiUrl}/logout`);
+
+      if (response.data.message === "Logged out successfully.") {
+        // Redirect to login page after logout
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
   return (
     <nav className="sidebar">
@@ -30,10 +46,10 @@ const SideBar = () => {
         <i className="fas fa-search"></i>
         <p>Rechercher des Marchés</p>
       </Link>
-      <Link to={"/"} className="link">
+      <a href="" onClick={handleLogout} className="link">
         <i className="fas fa-sign-out-alt"></i>
         <p>Déconnexion</p>
-      </Link>
+      </a>
     </nav>
   );
 };

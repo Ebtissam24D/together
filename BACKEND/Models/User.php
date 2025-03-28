@@ -1,6 +1,6 @@
 <?php
-
-class User {
+class User
+{
     private $conn;
     private $table_name = "users";
 
@@ -11,38 +11,47 @@ class User {
     public $role;
     public $privilege;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // Méthode de login (à améliorer avec password_verify)
-    public function login($name_user, $password) {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE name_user = ? LIMIT 0,1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $name_user);
-        $stmt->execute();
+    public function login($name_user, $password)
+    {
+        session_start(); 
+        try {
+            $query = "SELECT * FROM " . $this->table_name . " WHERE name_user = ? LIMIT 0,1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $name_user);
+            $stmt->execute();
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($row) {
-           // avec un mot de passe haché, utilisez password_verify($password, $row['password'])
-             if (password_verify($password, $row["password"])){
-                 $this->id = $row['id'];
-                 $this->name_user = $row['name_user'];
-                 $this->role = $row['role'];
-                 $this->privilege = $row['privilege'];
+            if ($row) {
+                // avec un mot de passe haché, utilisez password_verify($password, $row['password'])
+                if ($row && password_verify($password, $row['password'])) {
+                    // Store user data in session
+                    $_SESSION['user'] = [
+                        'id' => $row['id'],
+                        'username' => $row['name_user'],
+                        'privilege' => $row['privilege']
+                    ];
 
-                return [
-                    'id' => $this->id,
-                    'name_user' => $this->name_user,
-                    'role' => $this->role,
-                    'privilege' => $this->privilege
-                ];
+                    echo json_encode([
+                        "message" => "Login successful",
+                        "user" => $_SESSION['user']
+                    ]);
+                } else {
+                    http_response_code(401);
+                    echo json_encode(["error" => "Invalid username or password"]);
+                }
             }
-           return $row ;
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(["error" => "Server error: " . $e->getMessage()]);
         }
-        
-        return false;
     }
     public function getUserDetails($user_id)
     {
@@ -54,7 +63,8 @@ class User {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     // Méthode d'inscription
-    public function register($name_user, $password, $role = 'viewer') {
+    public function register($name_user, $password, $role = 'viewer')
+    {
         // Vérifier si l'utilisateur existe déjà
         $check_query = "SELECT id FROM " . $this->table_name . " WHERE name_user = ?";
         $check_stmt = $this->conn->prepare($check_query);
@@ -69,9 +79,9 @@ class User {
         $query = "INSERT INTO " . $this->table_name . " 
                   (name_user, password, role, created_at) 
                   VALUES (:name_user, :password, :role, NOW())";
-        
+
         $stmt = $this->conn->prepare($query);
-        
+
         // Nettoyer et lier les paramètres
         $stmt->bindParam(':name_user', $name_user);
         $stmt->bindParam(':password', $password);
@@ -80,12 +90,13 @@ class User {
         if ($stmt->execute()) {
             return $this->conn->lastInsertId();
         }
-        
+
         return false;
     }
 
     // Mettre à jour le profil utilisateur
-    public function updateProfile($user_id, $update_data) {
+    public function updateProfile($user_id, $update_data)
+    {
         $set_clauses = [];
         $params = [];
 
@@ -102,7 +113,7 @@ class User {
         $query = "UPDATE " . $this->table_name . " 
                   SET " . implode(', ', $set_clauses) . "
                   WHERE id = :user_id";
-        
+
         $params[':user_id'] = $user_id;
 
         $stmt = $this->conn->prepare($query);
@@ -110,12 +121,13 @@ class User {
     }
 
     // Récupérer tous les utilisateurs (avec pagination)
-    public function getAllUsers($limit = 10, $offset = 0) {
+    public function getAllUsers($limit = 10, $offset = 0)
+    {
         $query = "SELECT id, name_user, role, created_at 
                   FROM " . $this->table_name . "
                   ORDER BY created_at DESC
                   LIMIT :limit OFFSET :offset";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
@@ -125,7 +137,8 @@ class User {
     }
 
     // Compter le nombre total d'utilisateurs
-    public function countUsers() {
+    public function countUsers()
+    {
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -134,7 +147,8 @@ class User {
     }
 
     // Supprimer un utilisateur
-    public function deleteUser($user_id) {
+    public function deleteUser($user_id)
+    {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
@@ -142,7 +156,8 @@ class User {
     }
 
     // Récupérer les permissions spécifiques d'un utilisateur
-    public function getUserPermissions($user_id) {
+    public function getUserPermissions($user_id)
+    {
         $query = "SELECT role, privilege FROM " . $this->table_name . " WHERE id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
@@ -151,31 +166,33 @@ class User {
     }
 
     // Mettre à jour les permissions d'un utilisateur
-    public function updateUserPermissions($user_id, $role, $privilege) {
+    public function updateUserPermissions($user_id, $role, $privilege)
+    {
         $query = "UPDATE " . $this->table_name . " 
                   SET role = :role, privilege = :privilege 
                   WHERE id = :user_id";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':role', $role);
         $stmt->bindParam(':privilege', $privilege);
         $stmt->bindParam(':user_id', $user_id);
-        
+
         return $stmt->execute();
     }
 
-   // Vérifier si un utilisateur a un privilège spécifique
-    public function hasPrivilege($user_id, $required_privilege) {
+    // Vérifier si un utilisateur a un privilège spécifique
+    public function hasPrivilege($user_id, $required_privilege)
+    {
         $query = "SELECT privilege FROM " . $this->table_name . " WHERE id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         // Exemple de logique de vérification de privilège
         // À personnaliser selon votre système de privilèges
-        return $result && 
-               (($result['privilege'] & $required_privilege) === $required_privilege);
+        return $result &&
+            (($result['privilege'] & $required_privilege) === $required_privilege);
     }
 }

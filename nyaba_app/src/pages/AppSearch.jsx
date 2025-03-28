@@ -17,6 +17,7 @@ const AppSearch = () => {
 
     try {
       const response = await axios.get(`${appBackend}/marches/search`, {
+        withCredentials: true,
         params: formData,
       });
       // alert("Data fetched successfully!");

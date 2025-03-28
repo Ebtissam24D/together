@@ -35,7 +35,7 @@ const Market_details = () => {
   const getMarches = async () => {
     try {
       const response = await axios.get(
-        `${appBackend}/marches`
+        `${appBackend}/marches`, { withCredentials: true }
       );
       console.log(response.data);
       setmarches(response.data.records || []);
@@ -47,7 +47,7 @@ const Market_details = () => {
   const getStatistique = async () => {
     try {
       const response = await axios.get(
-        `${appBackend}/marches/stats`
+        `${appBackend}/marches/stats`, { withCredentials: true }
       );
       console.log(response.data);
       setStatistique(response.data || { enCours: 0, soldes: 0 });
@@ -59,7 +59,7 @@ const Market_details = () => {
   const fetchMarketData = async (id) => {
     try {
       const response = await axios.get(
-        `${appBackend}/marches/${id}`
+        `${appBackend}/marches/${id}`, { withCredentials: true }
       );
 
       // Transform API response to match form field names
@@ -142,7 +142,7 @@ const Market_details = () => {
         if (confirmed) {
           try {
             const response = await axios.get(
-              `${appBackend}/marches/export/pdf/${marketId}`,
+              `${appBackend}/marches/export/pdf/${marketId}`,{ withCredentials: true },
               {
                 responseType: "blob", // Indique que la réponse est un fichier binaire
               }
@@ -173,7 +173,7 @@ const Market_details = () => {
         );
         if (confirmed) {
           try {
-            const response = await axios.delete(`${appBackend}/marches/${marketId}`);
+            const response = await axios.delete(`${appBackend}/marches/${marketId}`, { withCredentials: true });
             alert(response.data.message || "Marché supprimé avec succès");
           } catch (error) {
             console.error(error);
@@ -191,6 +191,7 @@ const Market_details = () => {
         if (confirmed) {
           try {
             const response = await axios.get(`${appBackend}/marches/export/${marketId}`, {
+              withCredentials: true,
               responseType: "blob", // Ensures the response is handled as a file (binary)
             });
 

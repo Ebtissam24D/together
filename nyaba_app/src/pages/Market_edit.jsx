@@ -31,7 +31,7 @@ const Market_edit = () => {
     const fetchMarketData = async () => {
       try {
         const response = await axios.get(
-          `${appBackend}/marches/${id}`
+          `${appBackend}/marches/${id}`,{ withCredentials: true }
         );
         
         // Transform API response to match form field names
@@ -98,11 +98,11 @@ const Market_edit = () => {
     try {
       const response = await axios.put(
         `${appBackend}/marches/${id}`,
-        marcheData
+        marcheData,{ withCredentials: true }
       );
       const response2 = await axios.put(
         `${appBackend}/entreprises/${id_p}`,
-        etrepriseData
+        etrepriseData,{ withCredentials: true }
       );
       if (response.status !== 200 || response2.status !== 200) {
         throw new Error("Erreur lors de la mise à jour du marché");

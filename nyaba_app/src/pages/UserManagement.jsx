@@ -16,7 +16,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/users');
+      const response = await axios.get('/api/users',{ withCredentials: true });
       if (response.status === 200) {
         setUsers(response.data);
       }
@@ -37,7 +37,7 @@ const UserManagement = () => {
       // Charger les permissions actuelles de l'utilisateur
       const fetchUserPermissions = async () => {
         try {
-          const response = await axios.get(`/api/users/${user.id}/permissions`);
+          const response = await axios.get(`/api/users/${user.id}/permissions`,{ withCredentials: true });
           setPermissions(response.data);
         } catch (err) {
           setError('Impossible de charger les permissions');
@@ -56,7 +56,7 @@ const UserManagement = () => {
 
     const savePermissions = async () => {
       try {
-        await axios.put(`/api/users/${user.id}/permissions`, permissions);
+        await axios.put(`/api/users/${user.id}/permissions`, permissions,{ withCredentials: true });
         onUpdate();
         onClose();
       } catch (err) {

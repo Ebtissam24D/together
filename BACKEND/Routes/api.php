@@ -1,8 +1,11 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-header("Access-Control-Max-Age: 86400"); // 1 day
+ session_start();
+ header("Access-Control-Allow-Origin: http://localhost:5173");
+ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+ header("Access-Control-Allow-Credentials: true"); // Allow cookies
+ header("Access-Control-Max-Age: 86400"); // 1 day
+ 
 // routes/api.php
 
 /**
@@ -13,6 +16,7 @@ header("Access-Control-Max-Age: 86400"); // 1 day
 
 // Place this at the very beginning of your file
 require_once '../database_connexion/dataConnexion.php';
+require_once __DIR__ . '/../middleware/AuthAuthorization.php';
 require_once __DIR__ . '/../Controllers/MarcheController.php';
 require_once __DIR__ . '/../Controllers/EntrepriseController.php';
 require_once __DIR__ . '/../Controllers/UserController.php';
@@ -110,7 +114,7 @@ class Router
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         // Supprimer le préfixe du chemin de base si nécessaire
-        $basePath = '/systeme-gestion-des-marches-et-contrat-/BACKEND/Routes/api';
+        $basePath = '/together/BACKEND/Routes/api';
         if (strpos($uri, $basePath) === 0) {
             $uri = substr($uri, strlen($basePath));
         }
@@ -160,90 +164,97 @@ $marcheController = new MarcheController($db);
 $entrepriseController = new TitulaireController($db);
 $userController = new UserController($db);
 // Dans votre fichier de routes
-$router->get('/marches/export/pdf/{id}', function ($id) use ($marcheController) {
-    $marcheController->exportPdf($id);
-});
-// Définir les routes pour les marchés
-$router->get('/marches', function () use ($marcheController) {
+// Routes for Markets (Marches)// Define routes for Marches
+$router->get('/marches', AuthAuthorization::checkPrivilege(['all', 'get'], function () use ($marcheController) {
     $marcheController->getAllMarches();
-});
+}));
 
-$router->get('/marches/stats', function () use ($marcheController) {
-    $marcheController->getStatistics();
-});
-
-$router->get('/marches/search', function () use ($marcheController) {
-    $marcheController->searchMarches();
-});
-
-$router->get('/marches/{id}', function ($id) use ($marcheController) {
-    $marcheController->getMarcheById($id);
-});
-
-$router->post('/marches', function () use ($marcheController) {
+$router->post('/marches', AuthAuthorization::checkPrivilege(['all', 'post'], function () use ($marcheController) {
     $marcheController->createMarche();
-});
-// Définir les routes pour les utilisateurs
-$router->get('/users', function () use ($userController) {
-    $userController->getAllUsers();
-});
+}));
 
-$router->get('/users/{id}', function ($id) use ($userController) {
-    $userController->getUserById($id);
-});
-
-$router->get('/login/{user}', function ($user) use ($userController) {
-    $user_name = htmlspecialchars(strip_tags($user['name_user']));
-    $password = htmlspecialchars(strip_tags($user['password']));
-    $userController->login($user_name, $password);
-
-});
-$router->post('/users', function () use ($userController) {
-    $userController->createUser();
-});
-
-$router->put('/users/{id}', function ($id) use ($userController) {
-    $userController->updateUser($id);
-});
-
-$router->delete('/users/{id}', function ($id) use ($userController) {
-    $userController->deleteUser($id);
-});
-
-
-$router->put('/marches/{id}', function ($id) use ($marcheController) {
+$router->put('/marches/{id}', AuthAuthorization::checkPrivilege(['all', 'put'], function ($id) use ($marcheController) {
     $marcheController->updateMarche($id);
-});
+}));
 
-$router->delete('/marches/{id}', function ($id) use ($marcheController) {
+$router->delete('/marches/{id}', AuthAuthorization::checkPrivilege(['all', 'delete'], function ($id) use ($marcheController) {
     $marcheController->deleteMarche($id);
-});
+}));
 
-$router->get('/marches/export/{id}', function ($id) use ($marcheController) {
+// Define routes for Users
+$router->get('/users', AuthAuthorization::checkPrivilege(['admin'], function () use ($userController) {
+    $userController->getAllUsers();
+}));
+
+$router->get('/users/{id}', AuthAuthorization::checkPrivilege(['admin'], function ($id) use ($userController) {
+    $userController->getUserById($id);
+}));
+
+$router->post('/users', AuthAuthorization::checkPrivilege(['admin'], function () use ($userController) {
+    $userController->createUser();
+}));
+
+$router->put('/users/{id}', AuthAuthorization::checkPrivilege(['admin'], function ($id) use ($userController) {
+    $userController->updateUser($id);
+}));
+
+$router->delete('/users/{id}', AuthAuthorization::checkPrivilege(['admin'], function ($id) use ($userController) {
+    $userController->deleteUser($id);
+}));
+
+// Define other routes for Marches statistics, search, and export
+$router->get('/marches/stats', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+    $marcheController->getStatistics();
+}));
+
+$router->get('/marches/search', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+    $marcheController->searchMarches();
+}));
+
+$router->get('/marches/export/pdf/{id}', AuthAuthorization::checkPrivilege(['admin','all','get'], function ($id) use ($marcheController) {
+    $marcheController->exportPdf($id);
+}));
+
+$router->get('/marches/export/{id}', AuthAuthorization::checkPrivilege(['admin','all','get'], function ($id) use ($marcheController) {
     $marcheController->exportMarcheAsExcel($id);
-});
-// Définir les routes pour les entreprises
-$router->get('/entreprises', function () use ($entrepriseController) {
+}));
+
+// Define routes for Entreprises
+$router->get('/entreprises', AuthAuthorization::checkPrivilege(['admin', 'all'], function () use ($entrepriseController) {
     $entrepriseController->index();
-});
+}));
 
-$router->get('/entreprises/{id}', function ($id) use ($entrepriseController) {
+$router->get('/entreprises/{id}', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function ($id) use ($entrepriseController) {
     $entrepriseController->show($id);
-});
-$router->put('/entreprises/{id_p}', function ($id) use ($entrepriseController) {
+}));
+
+$router->put('/entreprises/{id_p}', AuthAuthorization::checkPrivilege(['admin','put'.'all'], function ($id) use ($entrepriseController) {
     $entrepriseController->update($id);
-});
+}));
 
-$router->get('/entreprises/search/{term}', function ($term) use ($entrepriseController) {
+$router->get('/entreprises/search/{term}', AuthAuthorization::checkPrivilege(['admin', 'all'], function ($term) use ($entrepriseController) {
     $entrepriseController->search($term);
-});
+}));
 
 
-
-// Définir les routes pour les utilisateurs
+// Définir les routes pour l'authentification
 $router->post('/login', function () use ($userController) {
     $data = json_decode(file_get_contents('php://input'), true);
-    $userController->login($data['name_user'], $data['password']);
+    $userController->login($data['user_name'], $data['password']);
+});
+$router->post('/logout', function () {
+    session_start();
+    session_unset();  // Unset all session variables
+    session_destroy(); // Destroy the session
+    echo json_encode(["message" => "Logged out successfully."]);
+});
+$router->get('/session', function () {
+    if (isset($_SESSION['user'])) {
+        echo json_encode(["user" => $_SESSION['user']]);
+    } else {
+        http_response_code(401);
+        echo json_encode(["error" => "Not authenticated"]);
+    };
 });
 // Route par défaut
 $router->notFound(function () {
