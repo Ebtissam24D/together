@@ -20,8 +20,7 @@ require_once __DIR__ . '/../middleware/AuthAuthorization.php';
 require_once __DIR__ . '/../Controllers/MarcheController.php';
 require_once __DIR__ . '/../Controllers/EntrepriseController.php';
 require_once __DIR__ . '/../Controllers/UserController.php';
-require_once '../env.php'; 
-loadEnv('../.env');
+
 // Handle preflight OPTIONS requests
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     header("HTTP/1.1 200 OK");
@@ -115,7 +114,7 @@ class Router
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         // Supprimer le préfixe du chemin de base si nécessaire
-        $basePath = $_ENV['APP_BASE_PATH'];
+        $basePath = '/together/BACKEND/Routes/api';
         if (strpos($uri, $basePath) === 0) {
             $uri = substr($uri, strlen($basePath));
         }
@@ -166,36 +165,24 @@ $entrepriseController = new TitulaireController($db);
 $userController = new UserController($db);
 // Dans votre fichier de routes
 // Routes for Markets (Marches)// Define routes for Marches
-$router->get('/marches', AuthAuthorization::checkPrivilege(['admin', 'get'], function () use ($marcheController) {
+$router->get('/marches', AuthAuthorization::checkPrivilege(['all', 'get'], function () use ($marcheController) {
     $marcheController->getAllMarches();
 }));
-// Define other routes for Marches statistics, search, and export
-$router->get('/marches/stats', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
-    $marcheController->getStatistics();
-}));
 
-$router->get('/marches/search', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
-    $marcheController->searchMarches();
-}));
-$router->get('/marches/{id}', AuthAuthorization::checkPrivilege(['admin', 'all' ,'get'], function ($id) use ($marcheController) {
-    $marcheController->getMarcheById($id);
-}));
-
-$router->post('/marches', AuthAuthorization::checkPrivilege(['admin','all', 'post'], function () use ($marcheController) {
+$router->post('/marches', AuthAuthorization::checkPrivilege(['all', 'post'], function () use ($marcheController) {
     $marcheController->createMarche();
 }));
 
-
-$router->put('/marches/{id}', AuthAuthorization::checkPrivilege(['admin','all', 'put'], function ($id) use ($marcheController) {
+$router->put('/marches/{id}', AuthAuthorization::checkPrivilege(['all', 'put'], function ($id) use ($marcheController) {
     $marcheController->updateMarche($id);
 }));
 
-$router->delete('/marches/{id}', AuthAuthorization::checkPrivilege(['admin','all', 'delete'], function ($id) use ($marcheController) {
+$router->delete('/marches/{id}', AuthAuthorization::checkPrivilege(['all', 'delete'], function ($id) use ($marcheController) {
     $marcheController->deleteMarche($id);
 }));
 
 // Define routes for Users
-$router->get('/users', AuthAuthorization::checkPrivilege(['admin','all',], function () use ($userController) {
+$router->get('/users', AuthAuthorization::checkPrivilege(['admin'], function () use ($userController) {
     $userController->getAllUsers();
 }));
 
@@ -215,6 +202,14 @@ $router->delete('/users/{id}', AuthAuthorization::checkPrivilege(['admin'], func
     $userController->deleteUser($id);
 }));
 
+// Define other routes for Marches statistics, search, and export
+$router->get('/marches/stats', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+    $marcheController->getStatistics();
+}));
+
+$router->get('/marches/search', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+    $marcheController->searchMarches();
+}));
 
 $router->get('/marches/export/pdf/{id}', AuthAuthorization::checkPrivilege(['admin','all','get'], function ($id) use ($marcheController) {
     $marcheController->exportPdf($id);
@@ -248,6 +243,7 @@ $router->post('/login', function () use ($userController) {
     $userController->login($data['user_name'], $data['password']);
 });
 $router->post('/logout', function () {
+    session_start();
     session_unset();  // Unset all session variables
     session_destroy(); // Destroy the session
     echo json_encode(["message" => "Logged out successfully."]);

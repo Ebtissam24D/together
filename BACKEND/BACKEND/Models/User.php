@@ -19,7 +19,7 @@ class User
     // Méthode de login (à améliorer avec password_verify)
     public function login($name_user, $password)
     {
-        //  session_start(); 
+        session_start(); 
         try {
             $query = "SELECT * FROM " . $this->table_name . " WHERE name_user = ? LIMIT 0,1";
             $stmt = $this->conn->prepare($query);
@@ -35,8 +35,7 @@ class User
                     $_SESSION['user'] = [
                         'id' => $row['id'],
                         'username' => $row['name_user'],
-                        'privilege' => $row['privilege'],
-                        'role' => $row['role']
+                        'privilege' => $row['privilege']
                     ];
 
                     echo json_encode([
@@ -124,8 +123,9 @@ class User
     // Récupérer tous les utilisateurs (avec pagination)
     public function getAllUsers($limit = 10, $offset = 0)
     {
-        $query = "SELECT name_user, role 
+        $query = "SELECT id, name_user, role, created_at 
                   FROM " . $this->table_name . "
+                  ORDER BY created_at DESC
                   LIMIT :limit OFFSET :offset";
 
         $stmt = $this->conn->prepare($query);

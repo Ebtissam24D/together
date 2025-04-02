@@ -17,43 +17,46 @@ const LoginPage = () => {
     setErrorMessage("");
 
     try {
-        const response = await axios.post(
-            `${apiUrl}/login`, 
-            { user_name, password }, 
-            { withCredentials: true } // Important: This allows cookies (session) to be sent and received
-        );
+      const response = await axios.post(
+        `${apiUrl}/login`,
+        { user_name, password },
+        { withCredentials: true } // Important: This allows cookies (session) to be sent and received
+      );
 
-        console.log(response.data);
+      console.log(response.data);
 
-        if (response.data && response.data.message === "Login successful") {
-            // Fetch session data to confirm user login
-            const sessionResponse = await axios.get(`${apiUrl}/session`, { withCredentials: true });
+      if (response.data && response.data.message === "Login successful") {
+        // Fetch session data to confirm user login
+        const sessionResponse = await axios.get(`${apiUrl}/session`, {
+          withCredentials: true,
+        });
 
-            if (sessionResponse.data && sessionResponse.data.user) {
-                const user = sessionResponse.data.user;
-
-                // Redirect based on user role
-                if (user.privilege === "admin") {
-                    navigate("/manage_users");
-                } else {
-                    navigate("/Dashboard");
-                }
-            }
-        } else {
-            setErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
+        if (sessionResponse.data && sessionResponse.data.user) {
+          const user = sessionResponse.data.user;
+          localStorage.setItem('user', JSON.stringify(user));
+          console.log(JSON.parse(localStorage.getItem("user")).role)
+          // Redirect based on user role.
+          if (user.role === "admin") {
+            navigate("/manage_users");
+          } else {
+            navigate("/Dashboard");
+          }
         }
+      } else {
+        setErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
+      }
     } catch (error) {
-        console.error("Login error:", error);
+      console.error("Login error:", error);
 
-        if (error.response) {
-            setErrorMessage("Identifiants incorrects ou compte inexistant.");
-        } else {
-            setErrorMessage("Problème de connexion. Vérifiez votre réseau.");
-        }
+      if (error.response) {
+        setErrorMessage("Identifiants incorrects ou compte inexistant.");
+      } else {
+        setErrorMessage("Problème de connexion. Vérifiez votre réseau.");
+      }
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-};
+  };
 
   return (
     <>
@@ -103,7 +106,8 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="submit-button">
+              className="submit-button"
+            >
               {isLoading ? "Connexion en cours..." : "Se connecter"}
             </button>
           </form>

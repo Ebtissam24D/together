@@ -17,7 +17,11 @@ class UserController
         $password = htmlspecialchars(strip_tags($password));
         $result = $this->user->login($user_name, $password);
 
-        
+        // if ($result) {
+        //     echo json_encode($result);
+        // } else {
+        //     echo json_encode(['message' => 'Utilisateur non trouvé ou mot de passe incorrect'], 401);
+        // }
     }
 
     public function register($user_name, $password, $email)
