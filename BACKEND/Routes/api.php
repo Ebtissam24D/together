@@ -166,36 +166,36 @@ $entrepriseController = new TitulaireController($db);
 $userController = new UserController($db);
 // Dans votre fichier de routes
 // Routes for Markets (Marches)// Define routes for Marches
-$router->get('/marches', AuthAuthorization::checkPrivilege(['admin', 'get'], function () use ($marcheController) {
+$router->get('/marches', AuthAuthorization::checkPrivilege(['admin', 'view' , 'edit'], function () use ($marcheController) {
     $marcheController->getAllMarches();
 }));
 // Define other routes for Marches statistics, search, and export
-$router->get('/marches/stats', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+$router->get('/marches/stats', AuthAuthorization::checkPrivilege(['admin', 'view','edit'], function () use ($marcheController) {
     $marcheController->getStatistics();
 }));
 
-$router->get('/marches/search', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function () use ($marcheController) {
+$router->get('/marches/search', AuthAuthorization::checkPrivilege(['admin', 'edit'], function () use ($marcheController) {
     $marcheController->searchMarches();
 }));
-$router->get('/marches/{id}', AuthAuthorization::checkPrivilege(['admin', 'all' ,'get'], function ($id) use ($marcheController) {
+$router->get('/marches/{id}', AuthAuthorization::checkPrivilege(['admin', 'view' ,'edit'], function ($id) use ($marcheController) {
     $marcheController->getMarcheById($id);
 }));
 
-$router->post('/marches', AuthAuthorization::checkPrivilege(['admin','all', 'post'], function () use ($marcheController) {
+$router->post('/marches', AuthAuthorization::checkPrivilege(['admin','edit'], function () use ($marcheController) {
     $marcheController->createMarche();
 }));
 
 
-$router->put('/marches/{id}', AuthAuthorization::checkPrivilege(['admin','all', 'put'], function ($id) use ($marcheController) {
+$router->put('/marches/{id}', AuthAuthorization::checkPrivilege(['admin','edit'], function ($id) use ($marcheController) {
     $marcheController->updateMarche($id);
 }));
 
-$router->delete('/marches/{id}', AuthAuthorization::checkPrivilege(['admin','all', 'delete'], function ($id) use ($marcheController) {
+$router->delete('/marches/{id}', AuthAuthorization::checkPrivilege(['admin', 'edit'], function ($id) use ($marcheController) {
     $marcheController->deleteMarche($id);
 }));
 
 // Define routes for Users
-$router->get('/users', AuthAuthorization::checkPrivilege(['admin','all',], function () use ($userController) {
+$router->get('/users', AuthAuthorization::checkPrivilege(['admin'], function () use ($userController) {
     $userController->getAllUsers();
 }));
 
@@ -215,29 +215,33 @@ $router->delete('/users/{id}', AuthAuthorization::checkPrivilege(['admin'], func
     $userController->deleteUser($id);
 }));
 
+$router->put('/users/{id}/permissions', AuthAuthorization::checkPrivilege(['admin'], function ($id) use ($userController) {
+    $userController->updateUserPermissions($id);
+}));
 
-$router->get('/marches/export/pdf/{id}', AuthAuthorization::checkPrivilege(['admin','all','get'], function ($id) use ($marcheController) {
+
+$router->get('/marches/export/pdf/{id}', AuthAuthorization::checkPrivilege(['admin','edit'], function ($id) use ($marcheController) {
     $marcheController->exportPdf($id);
 }));
 
-$router->get('/marches/export/{id}', AuthAuthorization::checkPrivilege(['admin','all','get'], function ($id) use ($marcheController) {
+$router->get('/marches/export/{id}', AuthAuthorization::checkPrivilege(['admin','edit'], function ($id) use ($marcheController) {
     $marcheController->exportMarcheAsExcel($id);
 }));
 
 // Define routes for Entreprises
-$router->get('/entreprises', AuthAuthorization::checkPrivilege(['admin', 'all'], function () use ($entrepriseController) {
+$router->get('/entreprises', AuthAuthorization::checkPrivilege(['admin', 'view','edit'], function () use ($entrepriseController) {
     $entrepriseController->index();
 }));
 
-$router->get('/entreprises/{id}', AuthAuthorization::checkPrivilege(['admin', 'all','get'], function ($id) use ($entrepriseController) {
+$router->get('/entreprises/{id}', AuthAuthorization::checkPrivilege(['admin', 'view','edit'], function ($id) use ($entrepriseController) {
     $entrepriseController->show($id);
 }));
 
-$router->put('/entreprises/{id_p}', AuthAuthorization::checkPrivilege(['admin','put'.'all'], function ($id) use ($entrepriseController) {
+$router->put('/entreprises/{id_p}', AuthAuthorization::checkPrivilege(['admin','edit'], function ($id) use ($entrepriseController) {
     $entrepriseController->update($id);
 }));
 
-$router->get('/entreprises/search/{term}', AuthAuthorization::checkPrivilege(['admin', 'all'], function ($term) use ($entrepriseController) {
+$router->get('/entreprises/search/{term}', AuthAuthorization::checkPrivilege(['admin', 'edit'], function ($term) use ($entrepriseController) {
     $entrepriseController->search($term);
 }));
 

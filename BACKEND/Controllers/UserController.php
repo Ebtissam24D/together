@@ -16,8 +16,6 @@ class UserController
         $user_name = htmlspecialchars(strip_tags($user_name));
         $password = htmlspecialchars(strip_tags($password));
         $result = $this->user->login($user_name, $password);
-
-        
     }
 
     public function register($user_name, $password, $email)
@@ -54,26 +52,39 @@ class UserController
         } else {
             echo json_encode(['message' => 'Aucun utilisateur trouvé']);
         }
-     }
-
-
-    public function getUserById($id)
-    {
-      
     }
 
-    public function createUser()
+    public function updateUserPermissions($user_id)
     {
-      
-    }
 
-    public function updateUser($id)
-    {
-      
-    }
+        if (empty($user_id) || !is_numeric($user_id)) {
+            http_response_code(400);
+            echo json_encode(["message" => "ID de user manquant ou invalide"]);
+            return;
+        }
 
-    public function deleteUser($id)
-    {
-       
-}
+        $user_id = htmlspecialchars(strip_tags($user_id));
+
+        $permissions = json_decode(file_get_contents("php://input"), true)?? null;
+
+        if (is_null($permissions)) {
+            http_response_code(400);
+            echo json_encode(["message" => "Permissions manquantes ou invalides"]);
+            return;
+        }
+        $result = $this->user->updateUserPermissions($user_id, $permissions);
+
+        if ($result) {
+            echo json_encode(['message' => 'Permissions de l\'utilisateur mises à jour avec succès']);
+        } else {
+            echo json_encode(['message' => 'Échec de la mise à jour des permissions de l\'utilisateur']);
+        }
+    }
+    public function getUserById($id) {}
+
+    public function createUser() {}
+
+    public function updateUser($id) {}
+
+    public function deleteUser($id) {}
 }

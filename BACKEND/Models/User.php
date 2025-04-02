@@ -48,7 +48,6 @@ class User
                     echo json_encode(["error" => "Invalid username or password"]);
                 }
             }
-
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(["error" => "Server error: " . $e->getMessage()]);
@@ -124,7 +123,7 @@ class User
     // Récupérer tous les utilisateurs (avec pagination)
     public function getAllUsers($limit = 10, $offset = 0)
     {
-        $query = "SELECT name_user, role 
+        $query = "SELECT id, name_user, role , privilege 
                   FROM " . $this->table_name . "
                   LIMIT :limit OFFSET :offset";
 
@@ -156,24 +155,39 @@ class User
     }
 
     // Récupérer les permissions spécifiques d'un utilisateur
-    public function getUserPermissions($user_id)
-    {
-        $query = "SELECT role, privilege FROM " . $this->table_name . " WHERE id = :user_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    // public function getUserPermissions($user_id)
+    // {
+    //     $query = "SELECT role, privilege FROM " . $this->table_name . " WHERE id = :user_id";
+    //     $stmt = $this->conn->prepare($query);
+    //     $stmt->bindParam(':user_id', $user_id);
+    //     $stmt->execute();
+    //     return $stmt->fetch(PDO::FETCH_ASSOC);
+    // }
 
     // Mettre à jour les permissions d'un utilisateur
-    public function updateUserPermissions($user_id, $role, $privilege)
+    public function updateUserPermissions($user_id, $permissions)
     {
-        $query = "UPDATE " . $this->table_name . " 
-                  SET role = :role, privilege = :privilege 
+        $privilege = "";
+        if ($permissions['can_view']) {
+            $privilege = "view";
+        }
+        if ($permissions['can_edit']) {
+            $privilege = "edit";
+        }
+        if ($permissions['can_manage']) {
+            $privilege = "admin";
+        }
+        if ($privilege == "admin") {
+            $query = "UPDATE " . $this->table_name . " 
+            SET role = 'admin',privilege = :privilege 
+            WHERE id = :user_id";
+        } else {
+            $query = "UPDATE " . $this->table_name . " 
+                  SET privilege = :privilege 
                   WHERE id = :user_id";
+        }
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':role', $role);
         $stmt->bindParam(':privilege', $privilege);
         $stmt->bindParam(':user_id', $user_id);
 

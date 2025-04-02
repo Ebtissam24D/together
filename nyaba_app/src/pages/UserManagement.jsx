@@ -12,12 +12,11 @@ const UserManagement = () => {
     can_view: false,
     can_edit: false,
     can_manage: false,
-  })
+  });
   const apiUrl = import.meta.env.VITE_API_BACKEND_URL;
   // Charger les utilisateurs
   useEffect(() => {
     fetchUsers();
-    getPermissions();
   }, []);
   const fetchUsers = async () => {
     try {
@@ -25,7 +24,6 @@ const UserManagement = () => {
         withCredentials: true,
       });
       if (response.status === 200) {
-        console.log(response.data);
         setUsers(response.data);
       }
     } catch (err) {
@@ -35,13 +33,21 @@ const UserManagement = () => {
 
   // Composant pour la modal de gestion des permissions
   const PermissionsModal = ({ user, onClose, onUpdate }) => {
-   
-    useEffect(() => {
-      fetchUsers();
-      getPermissions();
-    }, []);
+    const [localPermissions, setLocalPermissions] = useState(() => {
+      switch (user.privilege) {
+        case "admin":
+          return { can_view: true, can_edit: true, can_manage: true };
+        case "edit":
+          return { can_view: true, can_edit: true, can_manage: false };
+        case "view":
+          return { can_view: true, can_edit: false, can_manage: false };
+        default:
+          return { can_view: false, can_edit: false, can_manage: false };
+      }
+    });
+
     const handlePermissionChange = (permission) => {
-      setPermissions((prev) => ({
+      setLocalPermissions((prev) => ({
         ...prev,
         [permission]: !prev[permission],
       }));
@@ -49,9 +55,13 @@ const UserManagement = () => {
 
     const savePermissions = async () => {
       try {
-        await axios.put(`${apiUrl}/${user.id}/permissions`, permissions, {
-          withCredentials: true,
-        });
+        await axios.put(
+          `${apiUrl}/users/${user.id}/permissions`,
+          localPermissions,
+          {
+            withCredentials: true,
+          }
+        );
         onUpdate();
         onClose();
       } catch (err) {
@@ -69,17 +79,17 @@ const UserManagement = () => {
           <div className="space-y-4">
             <PermissionCheckbox
               label="Peut Voir"
-              checked={permissions.can_view}
+              checked={localPermissions.can_view}
               onChange={() => handlePermissionChange("can_view")}
             />
             <PermissionCheckbox
               label="Peut Éditer"
-              checked={permissions.can_edit}
+              checked={localPermissions.can_edit}
               onChange={() => handlePermissionChange("can_edit")}
             />
             <PermissionCheckbox
               label="Peut Gérer"
-              checked={permissions.can_manage}
+              checked={localPermissions.can_manage}
               onChange={() => handlePermissionChange("can_manage")}
             />
           </div>
@@ -87,14 +97,12 @@ const UserManagement = () => {
           <div className="flex justify-end mt-6 space-x-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
+              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
               Annuler
             </button>
             <button
               onClick={savePermissions}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
               Enregistrer
             </button>
           </div>
@@ -102,9 +110,9 @@ const UserManagement = () => {
       </div>
     );
   };
-  const getPermissions = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    switch (user.role) {
+
+  const getPermissions = (user) => {
+    switch (user.privilege) {
       case "admin":
         setPermissions({
           can_view: true,
@@ -112,7 +120,20 @@ const UserManagement = () => {
           can_manage: true,
         });
         break;
-
+      case "get":
+        setPermissions({
+          can_view: true,
+          can_edit: false,
+          can_manage: false,
+        });
+        break;
+      case "edit":
+        setPermissions({
+          can_view: true,
+          can_edit: true,
+          can_manage: false,
+        });
+        break;
       default:
         setPermissions({
           can_view: false,
@@ -162,8 +183,7 @@ const UserManagement = () => {
               <td className="p-3 text-center">
                 <button
                   onClick={() => setSelectedUser(user)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                >
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                   Gérer Permissions
                 </button>
               </td>
